@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0,
+                 maximum-scale=1.0, minimum-scale=1.0, user-scalable=no,
+                 minimal-ui">
+    <script type="text/javascript"
+        src="{{ url_for('static', filename='jquery-2.2.0.min.js') }}"></script>
+    <script type="text/javascript"
+        src="{{ url_for('static', filename='arduipi.js') }}"></script>
+    <style>
+        button {
+            font-size: 1em;
+        }
+    </style>
+  </head>
+  <body>
+    <h1>arduipi</h1>
+    <h2>KAKU</h2>
+    <button onclick="$.post('/api/kaku', {state: true,
+                                          channel: 0})">on</button>
+    <button onclick="$.post('/api/kaku', {state: false,
+                                          channel: 0})">off</button><br>
+    <button onclick="$.post('/api/kaku', {state: true,
+                                          channel: 1})">on</button>
+    <button onclick="$.post('/api/kaku', {state: false,
+                                          channel: 1})">off</button><br>
+    <button onclick="$.post('/api/kaku', {state: true,
+                                          channel: 2})">on</button>
+    <button onclick="$.post('/api/kaku', {state: false,
+                                          channel: 2})">off</button><br>
+    <button onclick="$.post('/api/kaku', {state: true,
+                                          group: true})">all on</button>
+    <button onclick="$.post('/api/kaku', {state: false,
+                                          group: true})">all off</button><br>
+  </body>
+</html>
