@@ -3,7 +3,9 @@
 from flask import Flask, render_template, request, jsonify
 from flask_wtf.csrf import CsrfProtect
 
+import subprocess
 import serial
+import time
 
 #
 # Web-app written using Flask
@@ -13,25 +15,41 @@ app = Flask(__name__)
 CsrfProtect(app)
 app.config.from_pyfile('config.cfg')
 
+
+
 @app.route('/')
-def view_home():
+def home():
     return render_template('home.html')
 
+@app.route('/api/reset', methods=['POST'])
+def reset():
+    """ Resets Arduino by pulling the `DTR line' low on
+        the serial connection. """
+    # TODO timeout if we can't open it and then reset via rPi GPIO?
+    with _connect_to_arduino() as ser:
+        ser.setDTR(False)
+        ser.setDTR(True)
+    return jsonify(ok=True)
+
 @app.route('/api/kaku', methods=['POST'])
-def view_kaku():
+def kaku():
     state = request.form.get('state', 'true') == 'true'
     channel = int(request.form.get('channel', 0))
     group = request.form.get('group', 'false') == 'true'
     hwid = int(request.form.get('hwid', app.config['KAKU_HWID']))
-    kaku(hwid, state, channel, group)
+    control_kaku(hwid, state, channel, group)
     return jsonify(ok=True)
+
+@app.route('/api/thermistor')
+def thermistor():
+    return jsonify(raw=read_thermistor())
 
 #
 # Code to control the Arduino via serial port
 #
 
 def _connect_to_arduino():
-    return serial.Serial('/dev/ttyACM0', 115200)
+    return serial.Serial(app.config['ARDUINO_TTY'], 115200)
 
 def _radio433_transmit_ppm(pauses, pulse_length):
     """ Send pulse-position modulated signal over radio
@@ -43,7 +61,7 @@ def _radio433_transmit_ppm(pauses, pulse_length):
             ser.write("{0}\n".format(pauses[i/2] if i%2 else pulse_length))
         assert ser.readline().startswith('!')
 
-def kaku(hwid, stat=False, channel=0, group=False):
+def control_kaku(hwid, stat=False, channel=0, group=False):
     """ Control KlikAanKlikUit devices using 433MHz transmitter on
         the arduino. """
     T = 265
@@ -57,6 +75,17 @@ def kaku(hwid, stat=False, channel=0, group=False):
     pulses.append(T*32)
     _radio433_transmit_ppm(pulses*3, T)
 
+def read_thermistor():
+    with _connect_to_arduino() as ser:
+        assert ser.readline().startswith('?')
+        ser.write('T')
+        return int(ser.readline().strip())
+
+@app.before_first_request
+def arduino_tty_nohup():
+    """ Prevent arduino from resetting on every connection to
+        its serial port. """
+    subprocess.call(['stty',  '-F', app.config['ARDUINO_TTY'], '-hup'])
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
