@@ -3,6 +3,8 @@
 from flask import Flask, render_template, request, jsonify
 from flask_wtf.csrf import CsrfProtect
 
+from werkzeug.wsgi import DispatcherMiddleware
+
 import subprocess
 import serial
 import time
@@ -15,7 +17,8 @@ app = Flask(__name__)
 CsrfProtect(app)
 app.config.from_pyfile('config.cfg')
 
-
+wsgi_app = DispatcherMiddleware(None, {
+            app.config.get('APPLICATION_ROOT', '/'): app})
 
 @app.route('/')
 def home():
@@ -83,9 +86,12 @@ def read_thermistor():
 
 @app.before_first_request
 def arduino_tty_nohup():
-    """ Prevent arduino from resetting on every connection to
-        its serial port. """
+    # Prevent arduino from resetting on every connection to its serial port.
     subprocess.call(['stty',  '-F', app.config['ARDUINO_TTY'], '-hup'])
+    # Reset once.
+    with _connect_to_arduino() as ser:
+        ser.setDTR(False)
+        ser.setDTR(True)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

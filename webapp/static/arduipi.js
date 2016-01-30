@@ -1,6 +1,3 @@
-function api() {
-}
-
 function main() {
     // Set-up CSRF protection.
     var csrftoken = $('meta[name=csrf-token]').attr('content');

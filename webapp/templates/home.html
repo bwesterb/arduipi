@@ -18,22 +18,22 @@
     </style>
   </head>
   <body>
-    <button onclick="$.post('/api/kaku', {state: true,
+    <button onclick="$.post('{{ url_for("kaku") }}', {state: true,
                                           channel: 0})">on</button>
-    <button onclick="$.post('/api/kaku', {state: false,
+    <button onclick="$.post('{{ url_for("kaku") }}', {state: false,
                                           channel: 0})">off</button><br>
-    <button onclick="$.post('/api/kaku', {state: true,
+    <button onclick="$.post('{{ url_for("kaku") }}', {state: true,
                                           channel: 1})">on</button>
-    <button onclick="$.post('/api/kaku', {state: false,
+    <button onclick="$.post('{{ url_for("kaku") }}', {state: false,
                                           channel: 1})">off</button><br>
-    <button onclick="$.post('/api/kaku', {state: true,
+    <button onclick="$.post('{{ url_for("kaku") }}', {state: true,
                                           channel: 2})">on</button>
-    <button onclick="$.post('/api/kaku', {state: false,
+    <button onclick="$.post('{{ url_for("kaku") }}', {state: false,
                                           channel: 2})">off</button><br>
-    <button onclick="$.post('/api/kaku', {state: true,
+    <button onclick="$.post('{{ url_for("kaku") }}', {state: true,
                                           group: true})">all on</button>
-    <button onclick="$.post('/api/kaku', {state: false,
+    <button onclick="$.post('{{ url_for("kaku") }}', {state: false,
                                           group: true})">all off</button><br>
-    <button onclick="$.post('/api/reset')">reset</button>
+    <button onclick="$.post('{{ url_for("reset") }}')">reset</button>
   </body>
 </html>
